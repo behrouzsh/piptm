@@ -5,7 +5,8 @@
  * @version 1.0.4
  */
 body {
-    background: #efefef url(../img/black-linen.png) repeat;
+    background-color: #ffffff;
+    background: #efefef url(../img/brushed-alum-dark.png) repeat;
 }
 pre {
     border: 1px solid #ccc;
