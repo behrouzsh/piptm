@@ -1,17 +1,64 @@
 /* global FastClick, smoothScroll */
-angular.module('ui.bootstrap.demo', ['ui.bootstrap', 'plunker', 'ngTouch', 'ngAnimate', 'ngSanitize'], function($httpProvider){
-  if (!!window.FastClick) {
-    FastClick.attach(document.body);
-  }
-  delete $httpProvider.defaults.headers.common['X-Requested-With'];
-}).run(['$location', function($location){
-  //Allows us to navigate to the correct element on initialization
-  if ($location.path() !== '' && $location.path() !== '/') {
-    smoothScroll(document.getElementById($location.path().substring(1)), 500, function(el) {
-      location.replace('#' + el.id);
-    });
-  }
-}]).factory('buildFilesService', function ($http, $q) {
+var myApp= angular.module('ui.bootstrap.demo', ['ui.router', 'ui.bootstrap', 'plunker', 'ngTouch', 'ngAnimate', 'ngSanitize']);
+//This example is coming from https://scotch.io/tutorials/angular-routing-using-ui-router
+myApp.config(function($stateProvider, $urlRouterProvider) {
+
+    $urlRouterProvider.otherwise('/home');
+
+    $stateProvider
+
+    // HOME STATES AND NESTED VIEWS ========================================
+        .state('home', {
+            url: '/home',
+            templateUrl: '/partials/home.html'
+        })
+
+        // nested list with custom controller
+        .state('home.list', {
+            url: '/home/list',
+            templateUrl: '/partials/list.html',
+            controller: function($scope) {
+                $scope.dogs = ['Bernese', 'Husky', 'Goldendoodle'];
+            }
+        })
+
+        // nested list with just some random string data
+        .state('home.paragraph', {
+            url: '/home/paragraph',
+            template: 'I could sure use a drink right now.'
+        })
+
+        // ABOUT PAGE AND MULTIPLE NAMED VIEWS =================================
+        .state('about', {
+            url: '/home/about',
+            views: {
+                '': { templateUrl: '/partials/about.html' },
+                'columnOne@about': { template: 'Look I am a column!' },
+                'columnTwo@about': {
+                    templateUrl: 'table-data.html',
+                    controller: 'scotchController'
+                }
+            }
+
+        });
+
+});
+    // , function($httpProvider){
+
+//   if (!!window.FastClick) {
+//     FastClick.attach(document.body);
+//   }
+//   delete $httpProvider.defaults.headers.common['X-Requested-With'];
+// });
+// myApp.run(['$location', function($location){
+//   //Allows us to navigate to the correct element on initialization
+//   if ($location.path() !== '' && $location.path() !== '/') {
+//     smoothScroll(document.getElementById($location.path().substring(1)), 500, function(el) {
+//       location.replace('#' + el.id);
+//     });
+//   }
+// }]);
+myApp.factory('buildFilesService', function ($http, $q) {
 
   var moduleMap;
   var rawFiles;
@@ -44,11 +91,47 @@ angular.module('ui.bootstrap.demo', ['ui.bootstrap', 'plunker', 'ngTouch', 'ngAn
   }
 
 })
-.controller('MainCtrl', MainCtrl)
-.controller('SelectModulesCtrl', SelectModulesCtrl)
-.controller('DownloadCtrl', DownloadCtrl);
+    // .config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+    //     $routeProvider.
+    //     when('/about', {templateUrl: 'partials/about.html',
+    //         controller: 'AboutCtrl',
+    //         controllerAs: 'ctrl'}).
+    //     when('/upload', {templateUrl: 'partials/paragraph.html',
+    //         controller: 'MainCtrl',
+    //         controllerAs: 'ctrl'})
+    //         .otherwise({
+    //             redirectTo: '/'
+    //         });
+    //
+    //     $locationProvider.html5Mode(true);
+    //
+    // }])
 
-function MainCtrl($scope, $http, $document, $uibModal, orderByFilter) {
+myApp.controller('scotchController', function($scope) {
+
+    $scope.message = 'test';
+
+    $scope.scotches = [
+        {
+            name: 'Macallan 12',
+            price: 50
+        },
+        {
+            name: 'Chivas Regal Royal Salute',
+            price: 10000
+        },
+        {
+            name: 'Glenfiddich 1937',
+            price: 20000
+        }
+    ];
+
+});
+// .controller('MainCtrl', MainCtrl)
+// .controller('SelectModulesCtrl', SelectModulesCtrl)
+// .controller('DownloadCtrl', DownloadCtrl);
+myApp.controller('MainCtrl', function($scope, $http, $document, $uibModal, orderByFilter) {
+//function MainCtrl($scope, $http, $document, $uibModal, orderByFilter) {
   // Grab old version docs
   $http.get('/bootstrap/versions-mapping.json')
     .then(function(result) {
@@ -76,9 +159,9 @@ function MainCtrl($scope, $http, $document, $uibModal, orderByFilter) {
       controller: 'DownloadCtrl'
     });
   };
-}
-
-function SelectModulesCtrl($scope, $uibModalInstance, modules, buildFilesService) {
+})
+myApp.controller('SelectModulesCtrl', function($scope, $uibModalInstance, modules, buildFilesService) {
+// function SelectModulesCtrl($scope, $uibModalInstance, modules, buildFilesService) {
   $scope.selectedModules = [];
   $scope.modules = modules;
 
@@ -242,9 +325,10 @@ function SelectModulesCtrl($scope, $uibModalInstance, modules, buildFilesService
       return stream.toString();
     }
   };
-}
+})
+myApp.controller('DownloadCtrl', function($scope, $uibModalInstance) {
 
-function DownloadCtrl($scope, $uibModalInstance) {
+// function DownloadCtrl($scope, $uibModalInstance) {
   $scope.options = {
     minified: true,
     tpls: true
@@ -269,7 +353,7 @@ function DownloadCtrl($scope, $uibModalInstance) {
   $scope.cancel = function () {
     $uibModalInstance.dismiss();
   };
-}
+})
 
 /*
  * The following compatibility check is from:
